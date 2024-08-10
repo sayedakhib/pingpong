@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ping Pong Game</title>
+    <style>
+        body{
+            background-color: gray;
+        }
+        
+        canvas {
+            display: block;
+            margin: auto;
+            background: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="pingPongCanvas" width="800" height="600"></canvas>
+    <script>
+        // Select the canvas element
+        const canvas = document.getElementById('pingPongCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Define the ball properties
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            speed: 5,
+            dx: 5,
+            dy: 5
+        };
+
+        // Define the paddle properties
+        const paddleWidth = 10;
+        const paddleHeight = 100;
+        const player = {
+            x: 0,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            dy: 0
+        };
+        const computer = {
+            x: canvas.width - paddleWidth,
+            y: canvas.height / 2 - paddleHeight / 2,
+            width: paddleWidth,
+            height: paddleHeight,
+            dy: 0
+        };
+
+        // Draw the ball
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFF';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw the paddles
+        function drawPaddle(x, y, width, height) {
+            ctx.fillStyle = '#FFF';
+            ctx.fillRect(x, y, width, height);
+        }
+
+        // Move the ball
+        function moveBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Ball collision with top and bottom walls
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.dy *= -1;
+            }
+
+            // Ball collision with paddles
+            if (ball.x - ball.radius < player.x + player.width && ball.y > player.y && ball.y < player.y + player.height) {
+                ball.dx *= -1;
+            } else if (ball.x + ball.radius > computer.x && ball.y > computer.y && ball.y < computer.y + computer.height) {
+                ball.dx *= -1;
+            }
+
+            // Ball out of bounds (reset ball)
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.x = canvas.width / 2;
+                ball.y = canvas.height / 2;
+                ball.dx *= -1;
+            }
+        }
+
+        // Move the paddles
+        function movePaddle(paddle) {
+            paddle.y += paddle.dy;
+
+            // Paddle collision with top and bottom walls
+            if (paddle.y < 0) {
+                paddle.y = 0;
+            } else if (paddle.y + paddle.height > canvas.height) {
+                paddle.y = canvas.height - paddle.height;
+            }
+        }
+
+        // Control player paddle with keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                player.dy = -5;
+            } else if (e.key === 'ArrowDown') {
+                player.dy = 5;
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                player.dy = 0;
+            }
+        });
+
+        // Simple AI to control computer paddle
+        function moveComputerPaddle() {
+            if (ball.dy > 0) {
+                computer.dy = 5;
+            } else {
+                computer.dy = -5;
+            }
+
+            movePaddle(computer);
+        }
+
+        // Update game elements
+        function update() {
+            moveBall();
+            movePaddle(player);
+            moveComputerPaddle();
+        }
+
+        // Draw game elements
+        function draw() {
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the ball and paddles
+            drawBall();
+            drawPaddle(player.x, player.y, player.width, player.height);
+            drawPaddle(computer.x, computer.y, computer.width, computer.height);
+        }
+
+        // Game loop
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game loop
+        gameLoop();
+
+    </script>
+</body>
+
+</html>
